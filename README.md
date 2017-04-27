@@ -26,6 +26,7 @@ Installation:
 ===============
 sudo apt-get install apache2
 sudo apt-get install php
+sudo apt-get install libapache2-mod-php
 sudo apt-get install php-mysql
 git clone repo to /var/www/html
 cp php.ini to /etc/php/0.7/apache2/php.ini
