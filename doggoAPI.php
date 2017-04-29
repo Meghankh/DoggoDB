@@ -9,27 +9,29 @@ if (strcmp($method, 'POST') !== 0) {
      * this is a get
      *    - check to make sure it is okay for GET
      */
-    $sArgs = filter_input_array(INPUT_GET);
+    $input = filter_input_array(INPUT_GET);
 }
 else {
     /**********************************************************************
      * this is a post
      */
-    $sArgs = filter_input_array(INPUT_POST);
+    $input = filter_input_array(INPUT_POST);
 }
 
 try {
-    if (!isset($sArgs['action'])) {
+    $inputJSON = file_get_contents('php://input');
+    $input= json_decode( $inputJSON, TRUE ); //convert JSON into array
+    if (!isset($input['action'])) {
         throw new Exception('Invalid api call - no action');
     } // require action in body
     else {
-        if ($sArgs['action'] == 'login') {
-            if (!isset($sArgs['username'])) {
+        if ($input['action'] == 'login') {
+            if (!isset($input['username'])) {
                 throw new Exception('Invalid api call - no username');
             }
             else {
-                $username = $sArgs['username'];
-                $password = $sArgs['password'];
+                $username = $input['username'];
+                $password = $input['password'];
                 $result['status'] = false;
                 $pdo = Database::connect();
                 $sql =("SELECT * FROM users WHERE username = '$username' and password = '$password'");
@@ -51,31 +53,34 @@ try {
                         $result['dogs'] = $dogs;
                     }
                 }
+		$cookie_name = $username;
+		$cookie_value = "logged-in";
+		setcookie($cookie_name, $cookie_value, time() + (86400 * 30), "/"); // 86400 = 1 day
                 $t = json_encode($result);
                 Database::disconnect();
                 echo $t;
                 return $t;
             }
         } // end login
-        else if ($sArgs['action'] == 'createUser') {
-            if (!isset($sArgs['username'])) {
+        else if ($input['action'] == 'createUser') {
+            if (!isset($input['username'])) {
                 throw new Exception('Invalid api call - no username');
             }
-            else if (!isset($sArgs['password'])) {
+            else if (!isset($input['password'])) {
                 throw new Exception('Invalid api call - no password');
             }
-            else if (!isset($sArgs['firstName'])) {
+            else if (!isset($input['firstName'])) {
                 throw new Exception('Invalid api call - no first name');
             }
-            else if (!isset($sArgs['lastName'])) {
+            else if (!isset($input['lastName'])) {
                 throw new Exception('Invalid api call - no last name');
             }
             else {
                 $result['status'] = false;
-                $u = $sArgs['username'];
-                $p = $sArgs['password'];
-                $fn = $sArgs['firstName'];
-                $ln = $sArgs['lastName'];
+                $u = $input['username'];
+                $p = $input['password'];
+                $fn = $input['firstName'];
+                $ln = $input['lastName'];
                 $pdo=Database::connect();
                 $pdo->beginTransaction();                     
                 $sql = "INSERT INTO users (username, password, firstName, lastName)
@@ -96,29 +101,29 @@ try {
                 return $t;
             }        
         } // end createUser
-        else if ($sArgs['action'] == 'createDog') {
-            if (!isset($sArgs['userID'])) {
+        else if ($input['action'] == 'createDog') {
+            if (!isset($input['userID'])) {
                 throw new Exception('Invalid api call - no user ID');
             }
-            else if (!isset($sArgs['dogName'])) {
+            else if (!isset($input['dogName'])) {
                 throw new Exception('Invalid api call - no dog name');
             }
-            else if (!isset($sArgs['weight'])) {
+            else if (!isset($input['weight'])) {
                 throw new Exception('Invalid api call - no weight');
             }
-            else if (!isset($sArgs['age'])) {
+            else if (!isset($input['age'])) {
                 throw new Exception('Invalid api call - no age');
             }
-            else if (!isset($sArgs['gender'])) {
+            else if (!isset($input['gender'])) {
                 throw new Exception('Invalid api call - no gender');
             }
             else {
                 $result['status'] = false;
-                $o = $sArgs['userID'];
-                $dn = $sArgs['dogName'];
-                $w = $sArgs['weight'];
-                $a = $sArgs['age'];
-                $g = $sArgs['gender'];
+                $o = $input['userID'];
+                $dn = $input['dogName'];
+                $w = $input['weight'];
+                $a = $input['age'];
+                $g = $input['gender'];
                 $pdo=Database::connect();
                 $pdo->beginTransaction();                     
                 $sql = "INSERT INTO dogs (dogName, weight, age, gender, ownerID)
@@ -139,13 +144,13 @@ try {
                 return $t;
             }
         } // End createDog
-        else if ($sArgs['action'] == 'deleteDog') {
-            if (!isset($sArgs['dogID'])) {
+        else if ($input['action'] == 'deleteDog') {
+            if (!isset($input['dogID'])) {
                 throw new Exception('Invalid api call - no user ID');
             }
             else {
                 $result['status'] = false;
-                $id = $sArgs['dogID'];
+                $id = $input['dogID'];
 
                 $pdo=Database::connect();                   
                 $sql = "DELETE FROM `dogs` WHERE dogID = $id";
@@ -160,33 +165,33 @@ try {
                 return $t;
             }
         } // End deleteDog
-        else if ($sArgs['action'] == 'updateDog') {
-            if (!isset($sArgs['userID'])) {
+        else if ($input['action'] == 'updateDog') {
+            if (!isset($input['userID'])) {
                 throw new Exception('Invalid api call - no user ID');
             }
-            else if (!isset($sArgs['dogName'])) {
+            else if (!isset($input['dogName'])) {
                 throw new Exception('Invalid api call - no dog name');
             }
-            else if (!isset($sArgs['weight'])) {
+            else if (!isset($input['weight'])) {
                 throw new Exception('Invalid api call - no weight');
             }
-            else if (!isset($sArgs['age'])) {
+            else if (!isset($input['age'])) {
                 throw new Exception('Invalid api call - no age');
             }
-            else if (!isset($sArgs['gender'])) {
+            else if (!isset($input['gender'])) {
                 throw new Exception('Invalid api call - no gender');
             }
-            else if (!isset($sArgs['dogID'])) {
+            else if (!isset($input['dogID'])) {
                 throw new Exception('Invalid api call - no dogID');
             }
             else {
                 $result['status'] = false;
-                    $o = $sArgs['userID'];
-                    $dn = $sArgs['dogName'];
-                    $w = $sArgs['weight'];
-                    $a = $sArgs['age'];
-                    $g = $sArgs['gender'];
-                        $did = $sArgs['dogID'];
+                $o = $input['userID'];
+                $dn = $input['dogName'];
+                $w = $input['weight'];
+                $a = $input['age'];
+                $g = $input['gender'];
+                $did = $input['dogID'];
                 $pdo=Database::connect();
                 $sql = "UPDATE `dogs` SET `age`= ?,`weight`=?,`gender`=?,`dogName`=? WHERE dogID = $did;";
                 $q = $pdo->prepare($sql);
