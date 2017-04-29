@@ -43,8 +43,4 @@ class Database
         self::$cont = null;
     }
 }
-<<<<<<< HEAD
 ?>
-=======
-?>
->>>>>>> 8f00b309670efc5a92ee7518f571fb461a6b63fc

@@ -229,5 +229,4 @@ catch (Exception $e) {
     echo $t;
     return $t;
 }
-<<<<<<< HEAD
 ?>
