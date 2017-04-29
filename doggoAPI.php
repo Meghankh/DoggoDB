@@ -25,6 +25,19 @@ try {
         throw new Exception('Invalid api call - no action');
     } // require action in body
     else {
+        if ($input['action'] == 'check_login') {
+            if (!isset($input['username'])) {
+                throw new Exception('Invalid api call - no username');
+            }
+	        if (!isset($_COOKIE[$input['username']])) {
+                throw new Exception('Invalid api call - no cookie');
+            }
+            $result['status'] = true;
+            $result['username'] = $input['username'];
+            $t = json_encode($result);
+            echo $t;
+            return $t;
+		}
         if ($input['action'] == 'login') {
             if (!isset($input['username'])) {
                 throw new Exception('Invalid api call - no username');
@@ -53,9 +66,9 @@ try {
                         $result['dogs'] = $dogs;
                     }
                 }
-		$cookie_name = $username;
-		$cookie_value = "logged-in";
-		setcookie($cookie_name, $cookie_value, time() + (86400 * 30), "/"); // 86400 = 1 day
+				$cookie_name = $username;
+				$cookie_value = "logged-in";
+				setcookie($cookie_name, $cookie_value, time() + (86400 * 30), "/"); // 86400 = 1 day
                 $t = json_encode($result);
                 Database::disconnect();
                 echo $t;
