@@ -66,15 +66,47 @@ try {
                         $result['dogs'] = $dogs;
                     }
                 }
-				$cookie_name = $username;
-				$cookie_value = "logged-in";
-				setcookie($cookie_name, $cookie_value, time() + (86400 * 30), "/"); // 86400 = 1 day
+        		$cookie_name = $username;
+	        	$cookie_value = "logged-in";
+        		setcookie($cookie_name, $cookie_value, time() + (86400 * 30), "/"); // 86400 = 1 day
                 $t = json_encode($result);
                 Database::disconnect();
                 echo $t;
                 return $t;
             }
         } // end login
+        else if ($input['action'] == 'steps') {
+            $result['sucess'] = false;
+            $previoud_id = 0;
+            $pdo=Database::connect();
+            foreach ($pdo->query("select max(id) as prev_id from step_progress;") as $row) {
+                $previous_id = (int)$row['prev_id'];
+            }
+            Database::disconnect();
+            $id = $previous_id + 1;
+            $user_id = $input['user_id'];
+            $date = $input['date'];
+            $epoch = $input['epoch'];
+            $steps_total = $input['steps_total'];
+            $steps_delta = $input['steps_delta'];
+            $pdo=Database::connect();
+            $pdo->beginTransaction();                     
+            $sql = "INSERT INTO step_progress (id, user_id, date, epoch, steps_total, steps_delta)
+            values(?, ?, ?, ?, ?, ?);";
+            $q = $pdo->prepare($sql);
+            $q->execute(array($id, $user_id, $date, $epoch, $steps_total, $steps_total));
+                       
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $last_id = $pdo->lastInsertId();
+            
+            $pdo->commit();
+            Database::disconnect();
+            $result['sucess'] = true;
+            
+            $t = json_encode($result);
+            echo $t;
+            return $t;
+        }
         else if ($input['action'] == 'createUser') {
             if (!isset($input['username'])) {
                 throw new Exception('Invalid api call - no username');
