@@ -107,6 +107,23 @@ try {
             echo $t;
             return $t;
         }
+        else if ($input['action'] == 'findUser')
+        {   
+            $result['success'] = false;
+            $user_id = $input['user_id'];
+            $pdo=Database::connect();
+            foreach ($pdo->query("select lastName, firstName from users where userID = '$user_id'") as $row) {
+                $user_last = $row['lastName'];
+                $user_first = $row['firstName'];
+            }
+            Database::disconnect();
+            $result['success'] = true;
+            $result['lastName'] = $user_last;
+            $result['firstName'] = $user_first;
+            $t = json_encode($result);
+            echo $t;
+            return $t;
+        }
         else if ($input['action'] == 'createUser') {
             if (!isset($input['username'])) {
                 throw new Exception('Invalid api call - no username');
